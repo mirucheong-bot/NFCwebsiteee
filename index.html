@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>달빛 점술소</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Gowun+Dodum&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-0:#0a0618; --bg-1:#150c2e; --bg-2:#20134a;
+    --card:rgba(244,236,255,0.055); --card-border:rgba(216,196,255,0.16);
+    --gold:#eec877; --gold-soft:#f6dd9c; --lavender:#b9a6ff; --pink:#ffb0d6;
+    --ink:#f3eefc; --ink-muted:#bdb0dd;
+    --serif:'Nanum Myeongjo', serif; --sans:'Gowun Dodum', sans-serif;
+    box-sizing:border-box;
+    padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  *{box-sizing:inherit;}
+  html,body{ min-height:100%; margin:0; background:var(--bg-0); color:var(--ink); font-family:var(--sans); -webkit-tap-highlight-color:transparent; }
+  html{ scroll-padding-top:env(safe-area-inset-top,0px); }
+  body.theme-morning{ --bg-0:#2a2140; --bg-1:#4a3560; --bg-2:#6b4a72; }
+  body.theme-afternoon{ --bg-0:#241436; --bg-1:#4a2244; --bg-2:#7a3a3a; }
+
+  .stars-bg{ position:fixed; inset:0; z-index:0; overflow:hidden;
+    background:radial-gradient(ellipse 70% 45% at 50% 8%, rgba(122,86,200,0.35), transparent 60%),
+      radial-gradient(ellipse 90% 60% at 20% 90%, rgba(60,30,110,0.4), transparent 65%),
+      linear-gradient(180deg, var(--bg-0) 0%, var(--bg-1) 55%, var(--bg-2) 100%);
+    transition:background 1s ease; }
+  .vignette{ position:fixed; inset:0; z-index:0; pointer-events:none;
+    background:radial-gradient(ellipse 60% 50% at 50% 55%, rgba(8,4,18,0) 0%, rgba(8,4,18,0.55) 100%); }
+  .star{ position:absolute; width:2px;height:2px; background:#fff; border-radius:50%; opacity:0.6; animation:twinkle 3.5s ease-in-out infinite; }
+  @keyframes twinkle{ 0%,100%{opacity:0.15; transform:scale(1);} 50%{opacity:0.95; transform:scale(1.6);} }
+  .theme-morning .star, .theme-afternoon .star{ opacity:0.12; }
+
+  .celestial{ position:fixed; top:6%; right:10%; z-index:5; width:64px; height:64px; cursor:pointer; border:none; background:none; padding:0; }
+  .celestial .orb{ width:100%; height:100%; border-radius:50%; transition:background 0.6s ease, box-shadow 0.6s ease; }
+  .celestial.moon .orb{ background:radial-gradient(circle at 35% 32%, #fff8e8 0%, var(--gold-soft) 45%, #d9b567 100%); box-shadow:0 0 50px 8px rgba(238,200,119,0.35); }
+  .celestial.sun .orb{ background:radial-gradient(circle at 35% 32%, #fff9e0 0%, #ffd27a 50%, #ff9e4a 100%); box-shadow:0 0 60px 14px rgba(255,180,90,0.4); }
+  .celestial.sunset .orb{ background:radial-gradient(circle at 35% 32%, #fff0dc 0%, #ff9d6b 50%, #d9506b 100%); box-shadow:0 0 55px 12px rgba(255,120,110,0.4); }
+  .celestial:hover .orb{ transform:scale(1.06); }
+  .celestial:active .orb{ transform:scale(0.95); }
+
+  .bgm-btn{ position:fixed; top:6%; left:5%; z-index:5; width:42px; height:42px; border-radius:50%;
+    border:1px solid var(--card-border); background:rgba(244,236,255,0.06); color:var(--ink);
+    display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:1.1rem; }
+
+  .app{ position:relative; z-index:1; min-height:100%; display:flex; align-items:center; justify-content:center; padding:90px 18px 50px; }
+  .screen{ display:none; width:100%; max-width:420px; flex-direction:column; align-items:center; text-align:center; animation:rise 0.55s ease both; }
+  .screen.active{display:flex;}
+  @keyframes rise{ from{opacity:0; transform:translateY(14px);} to{opacity:1; transform:translateY(0);} }
+
+  .eyebrow-orb{ width:46px; height:46px; border-radius:50%; border:1px solid var(--card-border); display:flex; align-items:center; justify-content:center; margin-bottom:18px; background:radial-gradient(circle at 40% 35%, rgba(255,255,255,0.08), transparent 70%); }
+  h1.brand{ font-family:var(--serif); font-weight:800; font-size:2rem; letter-spacing:0.02em; margin:0 0 6px;
+    background:linear-gradient(135deg, var(--gold-soft), var(--lavender) 70%); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .tagline{ font-size:0.95rem; color:var(--ink-muted); margin:0 0 30px; line-height:1.6; }
+
+  .cat-grid{ display:flex; flex-direction:column; gap:10px; width:100%; max-height:56vh; overflow-y:auto; padding-right:2px; }
+  .cat-card{ display:flex; align-items:center; gap:14px; width:100%; padding:14px 16px; background:var(--card); border:1px solid var(--card-border); border-radius:20px; cursor:pointer; text-align:left; color:var(--ink); font-family:var(--sans); transition:transform 0.25s ease, background 0.25s ease, border-color 0.25s ease; }
+  .cat-card:hover{ transform:translateY(-2px); background:rgba(244,236,255,0.09); border-color:rgba(216,196,255,0.32); }
+  .cat-card:active{transform:translateY(0) scale(0.99);}
+  .cat-icon{ flex:none; width:42px; height:42px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,0.06); }
+  .cat-icon svg{width:22px; height:22px;}
+  .cat-title{ font-size:1rem; font-weight:700; margin:0 0 2px; font-family:var(--serif); }
+  .cat-desc{ font-size:0.8rem; color:var(--ink-muted); margin:0; }
+
+  .form-card{ width:100%; background:var(--card); border:1px solid var(--card-border); border-radius:28px 28px 20px 20px; padding:28px 22px 24px; }
+  .form-cat-label{ display:inline-flex; align-items:center; gap:8px; padding:6px 14px; border-radius:999px; background:rgba(255,255,255,0.06); border:1px solid var(--card-border); font-size:0.8rem; color:var(--gold-soft); margin-bottom:16px; }
+  .field{ text-align:left; margin-bottom:16px; }
+  .field label{ display:block; font-size:0.82rem; color:var(--ink-muted); margin-bottom:6px; }
+  .field input[type="text"], .field input[type="date"]{ width:100%; padding:12px 14px; border-radius:14px; border:1px solid var(--card-border); background:rgba(10,6,24,0.4); color:var(--ink); font-family:var(--sans); font-size:0.95rem; outline:none; transition:border-color 0.2s ease; color-scheme:dark; }
+  .field input:focus{border-color:var(--lavender);}
+  .field input::placeholder{color:rgba(189,176,221,0.55);}
+  .gender-row{ display:flex; gap:8px; }
+  .gender-btn{ flex:1; padding:11px 0; border-radius:14px; border:1px solid var(--card-border); background:rgba(10,6,24,0.4); color:var(--ink-muted); font-family:var(--sans); font-size:0.85rem; cursor:pointer; transition:all 0.2s ease; }
+  .gender-btn.selected{ background:linear-gradient(135deg, rgba(238,200,119,0.22), rgba(185,166,255,0.22)); border-color:var(--gold); color:var(--ink); }
+
+  .primary-btn{ width:100%; padding:14px 0; margin-top:6px; border-radius:999px; border:none; background:linear-gradient(135deg, var(--gold-soft), var(--pink) 120%); color:#20112f; font-family:var(--serif); font-weight:700; font-size:1rem; cursor:pointer; transition:transform 0.2s ease, box-shadow 0.2s ease; box-shadow:0 8px 24px -8px rgba(238,200,119,0.5); }
+  .primary-btn:hover{transform:translateY(-1px);}
+  .primary-btn:active{transform:translateY(0) scale(0.98);}
+  .ghost-btn{ margin-top:14px; background:none; border:none; color:var(--ink-muted); font-family:var(--sans); font-size:0.85rem; cursor:pointer; text-decoration:underline; text-underline-offset:3px; }
+  .hint-err{ font-size:0.78rem; color:var(--pink); min-height:16px; margin-top:2px; }
+
+  .cast-stage{ position:relative; width:220px; height:220px; margin-bottom:22px; display:flex; align-items:center; justify-content:center; }
+  .cast-ring{ position:absolute; inset:0; border-radius:50%; border:1px solid rgba(238,200,119,0.25); animation:ringSpin 6s linear infinite; }
+  .cast-ring.r2{ inset:18px; border-color:rgba(185,166,255,0.25); animation-direction:reverse; animation-duration:8s; }
+  @keyframes ringSpin{ to{ transform:rotate(360deg); } }
+  .mascot-svg{ width:128px; height:128px; animation:float 2.6s ease-in-out infinite; transform-origin:center; }
+  @keyframes float{ 0%,100%{transform:translateY(0) rotate(-1.5deg);} 50%{transform:translateY(-8px) rotate(1.5deg);} }
+  .wandGroup{ transform-origin:86px 78px; animation:wandWave 1.1s ease-in-out infinite; }
+  @keyframes wandWave{ 0%,100%{ transform:rotate(-8deg); } 50%{ transform:rotate(18deg); } }
+  .wandStar{ animation:starPulse 1.1s ease-in-out infinite; transform-origin:96px 60px; }
+  @keyframes starPulse{ 0%,100%{ opacity:0.6; transform:scale(0.85); } 50%{ opacity:1; transform:scale(1.25); } }
+  .sparkle{ position:absolute; width:8px; height:8px; pointer-events:none; opacity:0; }
+
+  .cast-title{ font-family:var(--serif); font-weight:700; font-size:1.1rem; margin:0 0 6px; }
+  .cast-sub{ font-size:0.85rem; color:var(--ink-muted); margin:0 0 18px; min-height:20px; }
+  .cast-dots{ display:flex; gap:7px; }
+  .cast-dots span{ width:6px; height:6px; border-radius:50%; background:var(--gold-soft); opacity:0.3; animation:dotPulse 1.2s ease-in-out infinite; }
+  .cast-dots span:nth-child(2){animation-delay:0.15s;}
+  .cast-dots span:nth-child(3){animation-delay:0.3s;}
+  @keyframes dotPulse{ 0%,100%{opacity:0.25; transform:scale(1);} 50%{opacity:1; transform:scale(1.3);} }
+
+  .result-card{ width:100%; background:var(--card); border:1px solid var(--card-border); border-radius:20px 20px 28px 28px; padding:26px 22px 24px; position:relative; overflow:hidden; }
+  .result-card::before{ content:""; position:absolute; top:-40%; left:-20%; width:140%; height:100px; background:radial-gradient(ellipse, rgba(238,200,119,0.18), transparent 70%); pointer-events:none; }
+  .result-icon{ width:56px; height:56px; border-radius:50%; margin:0 auto 10px; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,0.07); }
+  .result-icon svg{width:30px; height:30px;}
+  .result-name{ font-size:0.9rem; color:var(--ink-muted); margin:0 0 2px; }
+  .result-cat{ font-family:var(--serif); font-size:1.4rem; font-weight:800; margin:0 0 10px; }
+  .stars-row{ display:flex; justify-content:center; gap:4px; margin-bottom:16px; }
+  .stars-row svg{width:18px; height:18px;}
+  .result-text{ font-size:0.96rem; line-height:1.75; color:var(--ink); margin:0 0 14px; text-align:left; }
+  .sub-block{ text-align:left; background:rgba(10,6,24,0.32); border:1px solid var(--card-border); border-radius:14px; padding:12px 14px; margin-bottom:12px; }
+  .sub-block h4{ margin:0 0 6px; font-size:0.82rem; color:var(--gold-soft); font-family:var(--serif); }
+  .sub-block p{ margin:0; font-size:0.88rem; line-height:1.6; color:var(--ink-muted); }
+  .caution-block{ text-align:left; border-left:2px solid var(--pink); padding:2px 0 2px 12px; margin-bottom:16px; }
+  .caution-block p{ margin:0; font-size:0.85rem; color:var(--ink-muted); line-height:1.6; }
+  .result-meta{ display:flex; gap:8px; margin-bottom:8px; flex-wrap:wrap; }
+  .meta-chip{ flex:1; min-width:90px; padding:10px 12px; border-radius:14px; background:rgba(10,6,24,0.35); border:1px solid var(--card-border); text-align:left; }
+  .meta-chip .k{ display:block; font-size:0.7rem; color:var(--ink-muted); margin-bottom:3px; }
+  .meta-chip .v{ font-size:0.85rem; font-weight:700; color:var(--lavender); }
+
+  .emoji-burst{ position:fixed; z-index:20; pointer-events:none; font-size:1.6rem; }
+  .jump-mascot{ position:fixed; bottom:-140px; z-index:8; width:110px; height:110px; pointer-events:none; }
+
+  @media (max-width:380px){ h1.brand{font-size:1.7rem;} .cast-stage{width:180px; height:180px;} .mascot-svg{width:104px; height:104px;} }
+</style>
+</head>
+<body>
+
+<div class="stars-bg" id="starsBg"></div>
+<div class="vignette"></div>
+<button class="celestial moon" id="celestialBtn" aria-label="달 누르기"><div class="orb"></div></button>
+<button class="bgm-btn" id="bgmBtn" aria-label="배경음악 켜고 끄기">🔈</button>
+
+<div class="app">
+
+  <section class="screen active" id="screen-start">
+    <div class="eyebrow-orb">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1" stroke="#eec877" stroke-width="1.4" stroke-linecap="round"/></svg>
+    </div>
+    <h1 class="brand">달빛 점술소</h1>
+    <p class="tagline">오늘 밤, 별들이 당신의 이야기를 들려드려요.<br>궁금한 운세를 하나 골라주세요.</p>
+    <div class="cat-grid" id="catGrid"></div>
+  </section>
+
+  <section class="screen" id="screen-form">
+    <div class="form-card">
+      <span class="form-cat-label" id="formCatLabel"></span>
+      <h1 class="brand" style="font-size:1.4rem; margin-bottom:6px;">별에게 전할 정보를 알려주세요</h1>
+      <p class="tagline" style="margin-bottom:22px;">정확할수록 더 또렷한 기운이 읽혀요.</p>
+      <div class="field"><label for="inputName">이름 (선택)</label><input type="text" id="inputName" placeholder="예: 두철" maxlength="12"></div>
+      <div class="field"><label for="inputBirth">생년월일</label><input type="date" id="inputBirth"></div>
+      <div class="field"><label>성별</label>
+        <div class="gender-row" id="genderRow">
+          <button type="button" class="gender-btn" data-gender="여성">여성</button>
+          <button type="button" class="gender-btn" data-gender="남성">남성</button>
+          <button type="button" class="gender-btn" data-gender="선택안함">선택 안 함</button>
+        </div>
+      </div>
+      <p class="hint-err" id="formError"></p>
+      <button class="primary-btn" id="submitBtn">운세 보러 가기</button>
+      <button class="ghost-btn" id="backToStart">다른 운세 고르기</button>
+    </div>
+  </section>
+
+  <section class="screen" id="screen-casting">
+    <div class="cast-stage" id="castStage">
+      <div class="cast-ring"></div><div class="cast-ring r2"></div>
+      <div id="mascotSlot"></div>
+    </div>
+    <p class="cast-title">별의 기운을 모으는 중</p>
+    <p class="cast-sub" id="castSub">달빛을 그러모으고 있어요...</p>
+    <div class="cast-dots"><span></span><span></span><span></span></div>
+  </section>
+
+  <section class="screen" id="screen-result">
+    <div class="result-card" id="resultCard">
+      <div class="result-icon" id="resultIcon"></div>
+      <p class="result-name" id="resultName"></p>
+      <h2 class="result-cat" id="resultCatTitle"></h2>
+      <div class="stars-row" id="resultStars"></div>
+      <p class="result-text" id="resultText"></p>
+      <div id="extraBlocks"></div>
+      <div class="caution-block"><p id="resultCaution"></p></div>
+      <div class="result-meta">
+        <div class="meta-chip"><span class="k">행운의 색</span><span class="v" id="resultColor">-</span></div>
+        <div class="meta-chip"><span class="k">행운의 아이템</span><span class="v" id="resultItem">-</span></div>
+        <div class="meta-chip"><span class="k">행운의 음식</span><span class="v" id="resultFood">-</span></div>
+      </div>
+    </div>
+    <button class="primary-btn" id="retryBtn" style="margin-top:20px;">다른 운세 보기</button>
+  </section>
+
+</div>
+
+<script>
+(function(){
+  function mascotSVG(idPrefix){
+    return '<svg class="mascot-svg" viewBox="0 0 128 128" fill="none">'+
+    '<ellipse cx="64" cy="112" rx="30" ry="6" fill="#000" opacity="0.18"/>'+
+    '<path d="M46 44c-4-14-2-26 4-30 4-2 7 1 6 8-2 12-4 20-2 26" fill="#f6efe3"/>'+
+    '<path d="M82 44c4-14 2-26-4-30-4-2-7 1-6 8 2 12 4 20 2 26" fill="#f6efe3"/>'+
+    '<path d="M48 40c-2-9-1-17 3-19 2 6 3 12 1 20" fill="#ffd3e8"/>'+
+    '<path d="M80 40c2-9 1-17-3-19-2 6-3 12-1 20" fill="#ffd3e8"/>'+
+    '<ellipse cx="64" cy="70" rx="30" ry="27" fill="#f6efe3"/>'+
+    '<path d="M64 24 L82 54 L46 54 Z" fill="url(#'+idPrefix+'hatGrad)"/>'+
+    '<rect x="45" y="52" width="38" height="7" rx="3.5" fill="#c9a3ff"/>'+
+    '<defs><linearGradient id="'+idPrefix+'hatGrad" x1="46" y1="24" x2="82" y2="54" gradientUnits="userSpaceOnUse"><stop stop-color="#b9a6ff"/><stop offset="1" stop-color="#7a56c8"/></linearGradient></defs>'+
+    '<ellipse cx="54" cy="70" rx="4.2" ry="5.2" fill="#2a2038"/><ellipse cx="74" cy="70" rx="4.2" ry="5.2" fill="#2a2038"/>'+
+    '<circle cx="55.4" cy="68" r="1.3" fill="#fff"/><circle cx="75.4" cy="68" r="1.3" fill="#fff"/>'+
+    '<ellipse cx="47" cy="78" rx="4" ry="2.6" fill="#ffc2d6" opacity="0.8"/><ellipse cx="81" cy="78" rx="4" ry="2.6" fill="#ffc2d6" opacity="0.8"/>'+
+    '<path d="M60 80c1.5 2 6.5 2 8 0" stroke="#8a7360" stroke-width="1.6" stroke-linecap="round"/>'+
+    '<path d="M84 82c6 2 10-2 10-8" stroke="#f6efe3" stroke-width="8" stroke-linecap="round"/>'+
+    '<g class="wandGroup"><line x1="94" y1="74" x2="108" y2="52" stroke="#7a56c8" stroke-width="3.4" stroke-linecap="round"/>'+
+    '<g class="wandStar"><path d="M110 46l2.4 5.2 5.6.6-4.2 3.8 1.2 5.6-4.9-2.9-4.9 2.9 1.2-5.6-4.2-3.8 5.6-.6z" fill="#eec877"/></g></g></svg>';
+  }
+  document.getElementById('mascotSlot').innerHTML = mascotSVG('a');
+
+  var starsBg = document.getElementById('starsBg');
+  for(var i=0;i<50;i++){
+    var s=document.createElement('div'); s.className='star';
+    s.style.left=Math.random()*100+'%'; s.style.top=Math.random()*100+'%';
+    var size=1+Math.random()*2; s.style.width=size+'px'; s.style.height=size+'px';
+    s.style.animationDelay=(Math.random()*3.5)+'s'; s.style.animationDuration=(2.5+Math.random()*3)+'s';
+    starsBg.appendChild(s);
+  }
+
+  var hour = new Date().getHours();
+  var themeName = 'night';
+  if(hour>=5 && hour<12) themeName='morning';
+  else if(hour>=12 && hour<18) themeName='afternoon';
+  if(themeName!=='night') document.body.classList.add('theme-'+themeName);
+  var celestialBtn = document.getElementById('celestialBtn');
+  celestialBtn.classList.remove('moon');
+  celestialBtn.classList.add(themeName==='morning'?'sun':themeName==='afternoon'?'sunset':'moon');
+
+  var COMMON_COLORS=['빨강','주황','노랑','초록','파랑','남색','보라','분홍','하양','검정'];
+
+  var SUBJECTS=['수학','영어','국어','과학','사회','예체능'];
+
+  var CATS = {
+    general:{ label:'종합운세', color:'#eec877', emojis:['🌟','✨','🍀','🌙'],
+      icon:'<svg viewBox="0 0 24 24" fill="none"><path d="M12 2l2 6h6l-5 4 2 7-5-4-5 4 2-7-5-4h6z" stroke="#eec877" stroke-width="1.3" stroke-linejoin="round"/></svg>',
+      openings:['오늘은 여러 방면의 기운이 한 데 모여 흐름을 만드는 날이에요.','전반적인 기운이 안정적으로 자리를 잡아가고 있어요.'],
+      bodies:['일과 사람, 건강까지 균형이 잘 맞는 하루가 될 거예요. 다만 한 가지에 몰두하다 다른 부분을 놓치지 않도록 시야를 넓게 가져보세요.','작은 결정들이 모여 앞으로의 방향을 크게 바꾸는 시기예요. 오늘 내린 선택이 다음 주의 흐름을 결정할 수 있어요.'],
+      cautions:['성급한 결정은 잠시 미뤄두는 편이 좋아요.','컨디션 관리를 소홀히 하기 쉬운 시기이니 몸 상태를 살피세요.']},
+    love:{ label:'연애운', color:'#ffb0d6', emojis:['💕','💖','🌹','😍'],
+      icon:'<svg viewBox="0 0 24 24" fill="none"><path d="M12 20s-7.5-4.6-10-9.3C0.3 7.2 2 3.5 5.6 3c2.2-.3 4.2.9 6.4 3 2.2-2.1 4.2-3.3 6.4-3 3.6.5 5.3 4.2 3.6 7.7C19.5 15.4 12 20 12 20z" stroke="#ffb0d6" stroke-width="1.5" stroke-linejoin="round"/></svg>',
+      openings:['요즘 마음 한구석이 자꾸 누군가에게로 기울고 있었죠.','최근 인연의 흐름이 조용히, 그러나 분명하게 방향을 바꾸고 있어요.'],
+      bodies:['이번 주 중반부터 먼저 다가가는 쪽보다 자연스럽게 곁을 내어주는 태도가 좋은 인연을 불러요. 작은 대화 속에서 뜻밖의 진심을 발견하게 될 거예요.','이미 곁에 있는 사람과의 관계가 한 단계 깊어질 타이밍이에요. 솔직한 말 한마디가 서운함보다 큰 신뢰를 만들어 줄 거예요.'],
+      cautions:['서운함을 쌓아두면 오해로 번질 수 있어요.','너무 급하게 다가가면 상대가 부담을 느낄 수 있어요.'],
+      compat:['차분하고 배려심 깊은 사람','유머 감각이 좋고 대화가 잘 통하는 사람','계획적이고 신뢰를 주는 사람','솔직하게 감정을 표현하는 사람'],
+      incompat:['감정 기복이 크고 즉흥적인 사람','무뚝뚝하고 표현에 인색한 사람','약속을 자주 어기는 사람','비교와 잔소리가 잦은 사람'],
+      best:['잔잔하게 곁을 지키며 대화가 잘 통하는, 유머 감각까지 갖춘 사람','솔직하고 다정하게 감정을 표현할 줄 아는 사람','서로의 속도를 존중하며 함께 성장하는 사람']},
+    wealth:{ label:'재물운', color:'#eec877', emojis:['💰','🪙','✨','💵'],
+      icon:'<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.4" stroke="#eec877" stroke-width="1.5"/><path d="M12 7.5v9M14.6 9.6c0-1-1-1.7-2.6-1.7-1.7 0-2.7.8-2.7 1.9 0 2.7 5.3 1.3 5.3 4 0 1.2-1.1 2-2.7 2s-2.9-.7-3-1.9" stroke="#eec877" stroke-width="1.3" stroke-linecap="round"/></svg>',
+      openings:['지갑 사정보다 마음의 여유가 먼저 채워지는 시기가 다가오고 있어요.','작게 뿌려둔 노력의 씨앗이 슬슬 싹을 틔우려 하고 있어요.'],
+      bodies:['충동적인 지출보다 계획된 소비가 훨씬 큰 만족을 주는 시기예요. 미뤄뒀던 정산이나 계약을 정리하면 뜻밖의 이득이 따라와요.','작은 부수입이나 예상 밖의 제안이 들어올 수 있어요. 다만 큰 결정은 이번 주보다 다음 기회를 노리는 편이 안전해요.'],
+      cautions:['확실하지 않은 투자 제안은 신중히 검토하세요.','충동구매를 조심하는 편이 좋아요.']},
+    study:{ label:'학업운', color:'#b9a6ff', emojis:['📚','✏️','🎓','💡'],
+      icon:'<svg viewBox="0 0 24 24" fill="none"><path d="M4 6.5 12 3l8 3.5-8 3.5-8-3.5Z" stroke="#b9a6ff" stroke-width="1.4" stroke-linejoin="round"/><path d="M7 8.6v5c0 1.4 2.2 2.9 5 2.9s5-1.5 5-2.9v-5" stroke="#b9a6ff" stroke-width="1.4" stroke-linecap="round"/></svg>',
+      openings:['머릿속이 복잡했던 만큼, 정리만 되면 훨씬 또렷해질 시기예요.','집중력이 파도처럼 밀려왔다 빠지는 시기를 지나고 있었죠.'],
+      bodies:['짧고 굵게 끊어서 공부하는 방식이 지금 흐름에 잘 맞아요. 특히 아침 시간에 익힌 내용이 오래 남을 거예요.','혼자보다 함께 공부하거나 질문을 주고받을 때 이해도가 확 올라가는 시기예요. 막혔던 부분을 소리 내어 설명해보세요.'],
+      cautions:['벼락치기보다 꾸준한 복습이 중요해요.','너무 많은 과목을 한 번에 욕심내지 마세요.']},
+    children:{ label:'자식운', color:'#ffe08a', emojis:['👶','🧸','💛','🌈'],
+      icon:'<svg viewBox="0 0 24 24" fill="none"><ellipse cx="8" cy="18" rx="3" ry="2" stroke="#ffe08a" stroke-width="1.3"/><ellipse cx="16" cy="18" rx="3" ry="2" stroke="#ffe08a" stroke-width="1.3"/><path d="M8 16V9M16 16V9" stroke="#ffe08a" stroke-width="1.3" stroke-linecap="round"/></svg>',
+      openings:['자녀 혹은 마음으로 품은 아이와의 인연에 따스한 기운이 감돌고 있어요.','작은 변화의 신호들이 하나둘 눈에 들어오는 시기예요.'],
+      bodies:['평소보다 아이의 사소한 말과 행동에 담긴 의미가 더 크게 다가올 수 있어요. 정답을 주기보다 충분히 들어주는 태도가 관계를 깊게 만들어요.','그동안 쌓아온 신뢰가 뜻밖의 순간에 드러나요. 함께 보내는 시간의 양보다 질에 집중해보세요.'],
+      cautions:['아이의 말에 귀 기울이는 시간이 필요해요.','조급한 마음에 다그치면 마음의 문을 닫을 수 있어요.']},
+    friendship:{ label:'우정운', color:'#9be3c4', emojis:['🤝','😊','🌈','✨'],
+      icon:'<svg viewBox="0 0 24 24" fill="none"><circle cx="9" cy="12" r="6" stroke="#9be3c4" stroke-width="1.3"/><circle cx="15" cy="12" r="6" stroke="#9be3c4" stroke-width="1.3"/></svg>',
+      openings:['오랜만에 연락이 뜸했던 인연에서 반가운 신호가 올 수 있어요.','주변 사람들과의 관계에 따뜻한 기운이 스며드는 시기예요.'],
+      bodies:['먼저 건네는 안부 인사 한마디가 생각보다 큰 힘이 되는 시기예요. 오래된 오해가 있었다면 지금이 풀기 좋은 타이밍이에요.','여러 사람 사이에서 중심을 잡아주는 역할을 하게 될 수 있어요. 무리하게 다 맞추려 하기보다 솔직한 의견을 내는 편이 관계에 도움이 돼요.'],
+      cautions:['가벼운 농담이 오해를 부를 수 있어요.','약속을 미루면 관계가 서먹해질 수 있어요.']}
+  };
+  var CAT_ORDER=['general','love','wealth','study','children','friendship'];
+  var FOODS={
+    general:['미역국','견과류','제철 과일'], love:['딸기 디저트','따뜻한 코코아','달콤한 초콜릿'],
+    wealth:['잡곡밥','견과류 믹스','생선 요리'], study:['블루베리','견과류 스낵','따뜻한 차'],
+    children:['미역국','과일 주스','따뜻한 죽'], friendship:['치킨','떡볶이','달콤한 디저트']
+  };
+  var ITEMS={
+    general:['작은 손거울','향초','열쇠고리'], love:['손편지','반지 모양 액세서리','향수'],
+    wealth:['동전 지갑','손목시계','작은 화분'], study:['만년필','스탠드 조명','노트 클립'],
+    children:['인형','알림장 스티커','가족 사진'], friendship:['우정 팔찌','다이어리','키링']
+  };
+
+  var catGrid = document.getElementById('catGrid');
+  CAT_ORDER.forEach(function(key){
+    var c = CATS[key];
+    var card = document.createElement('div');
+    card.className='cat-card'; card.setAttribute('data-cat', key);
+    card.innerHTML = '<div class="cat-icon">'+c.icon+'</div><div><p class="cat-title">'+c.label+'</p><p class="cat-desc">오늘의 '+c.label+' 흐름 읽어보기</p></div>';
+    catGrid.appendChild(card);
+  });
+
+  var state = { category:'general', name:'', birth:'', gender:'' };
+  var screens = document.querySelectorAll('.screen');
+  function showScreen(id){ screens.forEach(function(sc){ sc.classList.remove('active'); }); document.getElementById(id).classList.add('active'); }
+
+  document.querySelectorAll('.cat-card').forEach(function(card){
+    card.addEventListener('click', function(){
+      state.category = card.getAttribute('data-cat');
+      document.getElementById('formCatLabel').textContent = CATS[state.category].label;
+      showScreen('screen-form');
+    });
+  });
+  document.getElementById('backToStart').addEventListener('click', function(){ showScreen('screen-start'); });
+  document.querySelectorAll('.gender-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('.gender-btn').forEach(function(b){ b.classList.remove('selected'); });
+      btn.classList.add('selected'); state.gender = btn.getAttribute('data-gender');
+    });
+  });
+  document.getElementById('submitBtn').addEventListener('click', function(){
+    var name = document.getElementById('inputName').value.trim();
+    var birth = document.getElementById('inputBirth').value;
+    var errEl = document.getElementById('formError');
+    if(!birth){ errEl.textContent='생년월일을 입력해주세요.'; return; }
+    errEl.textContent=''; state.name=name; state.birth=birth;
+    startCasting();
+  });
+
+  var castTimer=null, subInterval=null;
+  var CAST_SUBS=['달빛을 그러모으고 있어요...','별의 속삭임을 듣는 중이에요...','기운의 흐름을 읽고 있어요...','마지막 실을 엮고 있어요...'];
+  function startCasting(){
+    showScreen('screen-casting');
+    var subEl = document.getElementById('castSub'); var subIdx=0;
+    subEl.textContent = CAST_SUBS[0];
+    subInterval = setInterval(function(){ subIdx=(subIdx+1)%CAST_SUBS.length; subEl.textContent=CAST_SUBS[subIdx]; }, 1200);
+    spawnSparkles();
+    castTimer = setTimeout(function(){ clearInterval(subInterval); showResult(); }, 5000);
+  }
+  function spawnSparkles(){
+    var stage = document.getElementById('castStage');
+    for(var i=0;i<14;i++){
+      (function(){
+        var el=document.createElement('div'); el.className='sparkle';
+        var angle=Math.random()*Math.PI*2, dist=60+Math.random()*40;
+        var dx=Math.cos(angle)*dist, dy=Math.sin(angle)*dist;
+        el.style.left='50%'; el.style.top='40%';
+        el.style.background = Math.random()>0.5 ? '#eec877' : '#b9a6ff';
+        el.style.borderRadius='50%'; el.style.boxShadow='0 0 6px 1px currentColor';
+        var delay=Math.random()*4500;
+        el.animate([
+          {transform:'translate(0,0) scale(0.3)', opacity:0},
+          {transform:'translate('+(dx*0.4)+'px,'+(dy*0.4)+'px) scale(1)', opacity:1, offset:0.3},
+          {transform:'translate('+dx+'px,'+dy+'px) scale(0.4)', opacity:0}
+        ], {duration:1400, delay:delay, iterations:1});
+        stage.appendChild(el);
+        setTimeout(function(){ el.remove(); }, delay+1450);
+      })();
+    }
+  }
+
+  function hashCode(str){ var h=0; for(var i=0;i<str.length;i++){ h=(h<<5)-h+str.charCodeAt(i); h|=0; } return h; }
+  function mulberry32(seed){ return function(){ seed|=0; seed=(seed+0x6D2B79F5)|0; var t=Math.imul(seed^(seed>>>15),1|seed); t=(t+Math.imul(t^(t>>>7),61|t))^t; return ((t^(t>>>14))>>>0)/4294967296; }; }
+  function starsSVG(count){
+    var full='<svg viewBox="0 0 20 20" fill="#eec877"><path d="M10 1l2.7 6 6.3.6-4.8 4.2 1.4 6.2L10 15l-5.6 3 1.4-6.2L1 7.6l6.3-.6z"/></svg>';
+    var empty='<svg viewBox="0 0 20 20" fill="none" stroke="#5a4d7a" stroke-width="1.2"><path d="M10 1l2.7 6 6.3.6-4.8 4.2 1.4 6.2L10 15l-5.6 3 1.4-6.2L1 7.6l6.3-.6z"/></svg>';
+    var out=''; for(var i=0;i<5;i++){ out += i<count?full:empty; } return out;
+  }
+  function pick(arr, rand){ return arr[Math.floor(rand()*arr.length)]; }
+  function pickDistinct(arr, rand, n){
+    var idxs=arr.map(function(_,i){return i;});
+    for(var i=idxs.length-1;i>0;i--){ var j=Math.floor(rand()*(i+1)); var t=idxs[i]; idxs[i]=idxs[j]; idxs[j]=t; }
+    return idxs.slice(0,n).map(function(i){return arr[i];});
+  }
+
+  function showResult(){
+    var cat = CATS[state.category];
+    var today = new Date().toISOString().slice(0,10);
+    var seedStr = state.birth+'|'+state.gender+'|'+state.category+'|'+today;
+    var rand = mulberry32(hashCode(seedStr));
+
+    var opening = pick(cat.openings, rand);
+    var body = pick(cat.bodies, rand);
+    var color = pick(COMMON_COLORS, rand);
+    var item = pick(ITEMS[state.category], rand);
+    var food = pick(FOODS[state.category], rand);
+    var caution = pick(cat.cautions, rand);
+    var score = 3 + Math.floor(rand()*3);
+
+    document.getElementById('resultIcon').innerHTML = cat.icon;
+    document.getElementById('resultName').textContent = state.name ? state.name+'님을 위한 오늘의 기운' : '오늘의 기운';
+    document.getElementById('resultCatTitle').textContent = cat.label;
+    document.getElementById('resultCatTitle').style.color = cat.color;
+    document.getElementById('resultStars').innerHTML = starsSVG(score);
+    document.getElementById('resultText').textContent = opening+' '+body;
+    document.getElementById('resultCaution').textContent = '주의점: '+caution;
+    document.getElementById('resultColor').textContent = color;
+    document.getElementById('resultItem').textContent = item;
+    document.getElementById('resultFood').textContent = food;
+
+    var extra = document.getElementById('extraBlocks');
+    extra.innerHTML='';
+    if(state.category==='love'){
+      var good=pick(cat.compat, rand), bad=pick(cat.incompat, rand), bestType=pick(cat.best, rand);
+      extra.innerHTML =
+        '<div class="sub-block"><h4>잘 맞는 사람</h4><p>'+good+'</p></div>'+
+        '<div class="sub-block"><h4>잘 맞지 않는 사람</h4><p>'+bad+'</p></div>'+
+        '<div class="sub-block"><h4>최고의 궁합</h4><p>'+bestType+'</p></div>';
+    } else if(state.category==='study'){
+      var picks = pickDistinct(SUBJECTS, rand, 3);
+      extra.innerHTML =
+        '<div class="sub-block"><h4>가장 잘 맞는 과목</h4><p>'+picks[0]+'</p></div>'+
+        '<div class="sub-block"><h4>잘 맞지 않는 과목</h4><p>'+picks[1]+'</p></div>'+
+        '<div class="sub-block"><h4>오늘 공부하면 효율적인 과목</h4><p>'+picks[2]+'</p></div>';
+    }
+
+    showScreen('screen-result');
+    if(score===5){ setTimeout(function(){ spawnEmojiBurst(cat.emojis); }, 250); }
+  }
+
+  function spawnEmojiBurst(emojis){
+    var card = document.getElementById('resultCard');
+    var rect = card.getBoundingClientRect();
+    for(var i=0;i<18;i++){
+      (function(){
+        var el=document.createElement('div'); el.className='emoji-burst';
+        el.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+        var startX = rect.left + rect.width/2 + (Math.random()*rect.width - rect.width/2);
+        el.style.left = startX+'px'; el.style.top = (rect.top+20)+'px';
+        document.body.appendChild(el);
+        var dx=(Math.random()*160-80), rise=100+Math.random()*140, dur=1200+Math.random()*800;
+        el.animate([
+          {transform:'translate(0,0) scale(0.6) rotate(0deg)', opacity:0},
+          {transform:'translate('+(dx*0.5)+'px,-'+(rise*0.5)+'px) scale(1.1) rotate(90deg)', opacity:1, offset:0.35},
+          {transform:'translate('+dx+'px,-'+rise+'px) scale(0.8) rotate(200deg)', opacity:0}
+        ], {duration:dur, iterations:1});
+        setTimeout(function(){ el.remove(); }, dur+50);
+      })();
+    }
+  }
+
+  document.getElementById('retryBtn').addEventListener('click', function(){
+    if(castTimer) clearTimeout(castTimer);
+    if(subInterval) clearInterval(subInterval);
+    document.getElementById('inputName').value=''; document.getElementById('inputBirth').value='';
+    document.querySelectorAll('.gender-btn').forEach(function(b){ b.classList.remove('selected'); });
+    state = { category:'general', name:'', birth:'', gender:'' };
+    showScreen('screen-start');
+  });
+
+  celestialBtn.addEventListener('click', function(){
+    var el = document.createElement('div'); el.className='jump-mascot';
+    el.innerHTML = mascotSVG('j'+Date.now());
+    el.style.left = (window.innerWidth/2 - 55)+'px';
+    document.body.appendChild(el);
+    el.animate([
+      {transform:'translateY(0) scale(0.7)', opacity:0},
+      {transform:'translateY(-320px) scale(1.05)', opacity:1, offset:0.45},
+      {transform:'translateY(-260px) scale(1)', opacity:1, offset:0.7},
+      {transform:'translateY(40px) scale(0.8)', opacity:0}
+    ], {duration:1900, easing:'ease-out'});
+    setTimeout(function(){ el.remove(); }, 1950);
+  });
+
+  // ---- BGM: 저작권 걱정 없는 합성 앰비언트 사운드 (Web Audio API로 직접 생성) ----
+  var audioCtx=null, bgmNodes=null, bgmOn=false;
+  function startBGM(){
+    audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+    var master = audioCtx.createGain(); master.gain.value=0.05; master.connect(audioCtx.destination);
+    var filter = audioCtx.createBiquadFilter(); filter.type='lowpass'; filter.frequency.value=900; filter.connect(master);
+    var freqs=[196.00,246.94,293.66]; var oscs=[];
+    freqs.forEach(function(f){
+      var o=audioCtx.createOscillator(); o.type='sine'; o.frequency.value=f;
+      var g=audioCtx.createGain(); g.gain.value=0.0001;
+      o.connect(g); g.connect(filter); o.start();
+      g.gain.linearRampToValueAtTime(0.22, audioCtx.currentTime+2.5);
+      oscs.push({o:o,g:g});
+    });
+    var lfo=audioCtx.createOscillator(); lfo.type='sine'; lfo.frequency.value=0.08;
+    var lfoGain=audioCtx.createGain(); lfoGain.gain.value=250;
+    lfo.connect(lfoGain); lfoGain.connect(filter.frequency); lfo.start();
+    bgmNodes={oscs:oscs, lfo:lfo, filter:filter, master:master};
+  }
+  function stopBGM(){
+    if(!bgmNodes) return;
+    var now = audioCtx.currentTime;
+    bgmNodes.oscs.forEach(function(n){ n.g.gain.linearRampToValueAtTime(0.0001, now+0.8); });
+    setTimeout(function(){ if(audioCtx) audioCtx.close(); audioCtx=null; bgmNodes=null; }, 900);
+  }
+  document.getElementById('bgmBtn').addEventListener('click', function(){
+    bgmOn = !bgmOn;
+    this.textContent = bgmOn ? '🔊' : '🔈';
+    if(bgmOn) startBGM(); else stopBGM();
+  });
+})();
+</script>
+</body>
+</html>
